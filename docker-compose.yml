@@ -1,0 +1,17 @@
+services:
+  fakenews:
+    build: .
+    image: fakenews:latest
+    ports:
+      - "7860:7860"
+    environment:
+      FAKENEWS_ARTIFACTS_DIR: /artifacts
+      HF_HOME: /root/.cache/huggingface
+      # FAKENEWS_LLM_API_KEY: ${ANTHROPIC_API_KEY}   # optional LLM fact-check rationale brain
+    volumes:
+      - ./artifacts:/artifacts
+      - hf_cache:/root/.cache/huggingface
+    command: uvicorn fakenews.api.app_combined:app --host 0.0.0.0 --port 7860
+
+volumes:
+  hf_cache:

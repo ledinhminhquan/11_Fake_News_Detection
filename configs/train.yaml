@@ -1,0 +1,43 @@
+# Training config for the fake-news classifier (HF Trainer, macro-F1) + baseline.
+# Loaded via `fakenews --config configs/train.yaml train-classifier`.
+project_title: Fake News & Misinformation Detection System
+author: Le Dinh Minh Quan
+student_id: "23127460"
+
+data:
+  # PRIMARY (VERIFIED): GonzaloA/fake_news (title/text/label, pre-split). 0=fake,1=real → normalized to internal 1=fake.
+  # license UNKNOWN (flag); permissive alts: chengxuphd/liar2 (Apache, 6-way), mohammadjavadpirhadi/fake-news-detection-dataset-english (MIT).
+  clf_dataset: GonzaloA/fake_news
+  fake_label_value: 0            # the raw value that means FAKE in this dataset (GonzaloA: 0)
+  use_hf: true
+  max_train_samples: 24000
+  max_eval_samples: 4000
+  liar_dataset: chengxuphd/liar2     # secondary 6-way credibility (Apache)
+  fever_dataset: fever/fever         # fact-check / stance source (cc-by-sa-3.0 + gpl-3.0 — flag)
+  seed: 42
+
+classifier:
+  # default T4-light Apache base. For the strongest model: microsoft/deberta-v3-base (MIT) or answerdotai/ModernBERT-base.
+  base_model: distilbert-base-uncased
+  max_length: 384
+  num_labels: 2                  # 0=real, 1=fake
+  num_train_epochs: 3
+  learning_rate: 2.0e-5
+  per_device_train_batch_size: 16
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  use_class_weights: true
+  bf16: true                     # H100/A100/L4 (Ampere+); set fp16:true on T4
+  fp16: false
+  tf32: true
+  eval_steps: 200
+  save_steps: 200
+
+stance:
+  nli_model: MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli   # MIT; entail→support, contra→refute, neutral→abstain
+  enabled: true
+
+retrieval:
+  embedder: sentence-transformers/all-MiniLM-L6-v2
+  reranker: cross-encoder/ms-marco-MiniLM-L6-v2
+  top_k: 5

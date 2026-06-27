@@ -1,0 +1,36 @@
+# Inference / serving config. Loaded via `fakenews --config configs/infer.yaml serve`.
+project_title: Fake News & Misinformation Detection System
+author: Le Dinh Minh Quan
+
+classifier:
+  base_model: distilbert-base-uncased
+  max_length: 384
+
+stance:
+  nli_model: MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli
+  enabled: true
+  support_threshold: 0.5
+  refute_threshold: 0.5
+
+retrieval:
+  embedder: sentence-transformers/all-MiniLM-L6-v2
+  reranker: cross-encoder/ms-marco-MiniLM-L6-v2
+  top_k: 5
+  use_bm25: true
+  use_dense: true
+  use_reranker: true
+
+agent:
+  short_claim_words: 40
+  skip_factcheck_confidence: 0.95
+  factcheck_in_auto: true
+  min_evidence: 1
+  min_evidence_relevance: 0.05
+  verdict_margin: 0.2
+  prior_weight: 0.3              # the classifier prior is a soft nudge; evidence dominates
+  min_verdict_confidence: 0.5
+  llm_fallback_enabled: false    # true + FAKENEWS_LLM_API_KEY => optional LLM rationale brain
+  llm_model: claude-haiku-4-5-20251001
+
+serving:
+  model_version: v1
